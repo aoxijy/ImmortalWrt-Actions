@@ -158,15 +158,15 @@ jobs:
     - name: 删除旧的Release
       if: steps.organize.outputs.status == 'success' && env.UPLOAD_RELEASE == 'true' && !cancelled()
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.WRT_GITHUB_TOKEN }}
         TAG_NAME: ${{ github.workflow }}
       run: |
         git push origin --delete ${{env.TAG_NAME}} || echo "远程标签不存在"
         RELEASE_URL="https://api.github.com/repos/${{ github.repository }}/releases/tags/$TAG_NAME"
-        RELEASE_ID=$(curl -s -H "Authorization: token $GITHUB_TOKEN" $RELEASE_URL | jq -r '.id')
+        RELEASE_ID=$(curl -s -H "Authorization: token $WRT_GITHUB_TOKEN" $RELEASE_URL | jq -r '.id')
         if [ "$RELEASE_ID" != "null" ]; then
           echo "🗑️ 删除Release中: $RELEASE_ID..."
-          curl -X DELETE -H "Authorization: token $GITHUB_TOKEN" "https://api.github.com/repos/${{ github.repository }}/releases/$RELEASE_ID"
+          curl -X DELETE -H "Authorization: token $WRT_GITHUB_TOKEN" "https://api.github.com/repos/${{ github.repository }}/releases/$RELEASE_ID"
           echo "✅ Release删除成功!"
         else
           echo "⚠️ 未找到tag的Release: $TAG_NAME"
