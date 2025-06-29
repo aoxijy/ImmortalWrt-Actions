@@ -215,31 +215,3 @@ jobs:
         fi
         curl "https://api.telegram.org/bot${{ env.TELEGRAM_BOT_TOKEN }}/sendMessage?chat_id=${{ env.TELEGRAM_CHATID }}&text=${content}"
 
-    - name: 整理Toolchain缓存文件
-      id: cache
-      if: steps.compile.outputs.status == 'success' && steps.compare.outputs.NEED_CACHE == 'true' && !cancelled()
-      run: |
-        cd $openwrt_root
-        find -maxdepth 1 -not -name staging_dir -not -name build_dir -not -name . | xargs rm -rf {}
-        rm -rf build_dir/target*
-        rm -rf staging_dir/target*
-        cd ..
-        mkdir -p output
-        tar -Jcf output/toolchain.tar.xz -C openwrt .
-        echo $CURRENT_HASH >> output/cache-hash.txt
-        df -hT $PWD
-        cd output
-        echo "output=$PWD" >> $GITHUB_ENV
-        echo "status=success" >> $GITHUB_OUTPUT
-
-    - name: 上传Toolchain缓存文件
-      uses: softprops/action-gh-release@v2
-      if: steps.cache.outputs.status == 'success' && steps.compare.outputs.NEED_CACHE == 'true' && !cancelled()
-      id: upload-cache
-      with:
-        repository: ${{ env.CACHE_REPO }}
-        token: ${{ secrets.PACKAGES_RELEASES }}
-        name: ${{ env.SOURCE_NAME }}-${{ env.CACHE_TARGET }}-toolchain
-        tag_name: ${{ env.SOURCE_NAME }}-${{ env.CACHE_TARGET }}-toolchain
-        body: CURRENT_HASH is ${{ env.CURRENT_HASH }}
-        files: ${{ env.output }}/*
