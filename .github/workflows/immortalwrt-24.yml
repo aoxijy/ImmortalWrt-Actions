@@ -70,14 +70,7 @@ jobs:
         echo "openwrt_root=$PWD" >> $GITHUB_ENV
         export CURRENT_HASH=$(git log --pretty=tformat:"%h" -n1 tools toolchain)
         echo "CURRENT_HASH=$CURRENT_HASH" >> $GITHUB_ENV
-        
-    - name: 编译 v2ray-plugin
-      run: |
-        export PATH=/usr/local/go/bin:$PATH
-        go version
-        make package/pwpage/v2ray-plugin/clean V=s
-        make package/pwpage/v2ray-plugin/compile V=s
-        
+                
     - name: 加载软件源
       env:
         FEEDS_CONF: ${{ github.workflow }}/feeds.conf.default
